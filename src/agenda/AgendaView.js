@@ -624,14 +624,14 @@ function AgendaView(element, calendar, viewName) {
 			return slotTable.height();
 		}
 		var slotMinutes = opt('slotMinutes'),
-			minutes = time.getHours()*60 + time.getMinutes() - minMinute,
-			slotI = Math.floor(minutes / slotMinutes),
+		seconds = time.getHours()*60*60 + time.getMinutes()*60 + time.getSeconds() - minMinute,
+		slotI = Math.floor(seconds/60 / slotMinutes),
 			slotTop = slotTopCache[slotI];
 		if (slotTop === undefined) {
 			slotTop = slotTopCache[slotI] = slotTable.find('tr').eq(slotI).find('td div')[0].offsetTop; //.position().top; // need this optimization???
 		}
 		return Math.max(0, Math.round(
-			slotTop - 1 + slotHeight * ((minutes % slotMinutes) / slotMinutes)
+			slotTop - 1 + slotHeight * ((seconds/60 % slotMinutes) / slotMinutes)
 		));
 	}
 	
