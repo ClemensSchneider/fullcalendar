@@ -14,6 +14,8 @@ var defaults = {
 	weekNumberCalculation: 'iso',
 	weekNumberTitle: 'W',
 	
+	moveEventTitleToEventTimeIfNoRoom: true,
+	
 	// editing
 	//editable: false,
 	//disableDragging: false,
