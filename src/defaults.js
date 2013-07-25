@@ -15,6 +15,8 @@ var defaults = {
 	selectionSpacer: true,
 	ignoreEventOverlap: false,
 	
+	moveEventTitleToEventTimeIfNoRoom: true,
+	
 	// editing
 	//editable: false,
 	//disableDragging: false,
