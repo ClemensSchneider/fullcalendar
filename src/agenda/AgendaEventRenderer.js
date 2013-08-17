@@ -35,8 +35,8 @@ function AgendaEventRenderer() {
 	var resizableDayEvent = t.resizableDayEvent; // TODO: streamline binding architecture
 	var getColCnt = t.getColCnt;
 	var getColWidth = t.getColWidth;
-	var getGranularityHeight = t.getGranularityHeight;
-	var getGranularityMinutes = t.getGranularityMinutes;
+	var getSnapHeight = t.getSnapHeight;
+	var getSnapMinutes = t.getSnapMinutes;
 	var getBodyContent = t.getBodyContent;
 	var reportEventElement = t.reportEventElement;
 	var showEvents = t.showEvents;
@@ -425,8 +425,8 @@ function AgendaEventRenderer() {
 		var dis = opt('isRTL') ? -1 : 1;
 		var hoverListener = getHoverListener();
 		var colWidth = getColWidth();
-		var granularityHeight = getGranularityHeight();
-		var granularityMinutes = getGranularityMinutes();
+		var snapHeight = getSnapHeight();
+		var snapMinutes = getSnapMinutes();
 		var minMinute = getMinMinute();
 		eventElement.draggable({
 			zIndex: origZIndex + 1,
@@ -457,9 +457,9 @@ function AgendaEventRenderer() {
 									eventElement.width(colWidth - 10); // don't use entire width
 									setOuterHeight(
 										eventElement,
-										granularityHeight * Math.round(
+										snapHeight * Math.round(
 											(event.end ? ((event.end - event.start) / MINUTE_MS) : opt('defaultEventMinutes')) /
-												granularityMinutes
+												snapMinutes
 										)
 									);
 									eventElement.draggable('option', 'grid', [colWidth, 1]);
@@ -491,8 +491,8 @@ function AgendaEventRenderer() {
 					// changed!
 					var minuteDelta = 0;
 					if (!allDay) {
-						minuteDelta = Math.round((eventElement.offset().top - getBodyContent().offset().top) / granularityHeight)
-							* granularityMinutes
+						minuteDelta = Math.round((eventElement.offset().top - getBodyContent().offset().top) / snapHeight)
+							* snapMinutes
 							+ minMinute
 							- (event.start.getHours() * 60 + event.start.getMinutes());
 					}
@@ -526,8 +526,8 @@ function AgendaEventRenderer() {
 		var hoverListener = getHoverListener();
 		var colCnt = getColCnt();
 		var colWidth = getColWidth();
-		var granularityHeight = getGranularityHeight();
-		var granularityMinutes = getGranularityMinutes();
+		var snapHeight = getSnapHeight();
+		var snapMinutes = getSnapMinutes();
 
 		var scroll = opt('scrollWhileDragging');
 		var prevTimeText = timeElement.text();
@@ -535,7 +535,7 @@ function AgendaEventRenderer() {
 		eventElement.draggable({
 			zIndex: origZIndex + 1,
 			scroll: scroll,
-			grid: [colWidth, granularityHeight],
+			grid: [colWidth, snapHeight],
 			axis: colCnt==1 ? 'y' : false,
 			opacity: opt('dragOpacity'),
 			revertDuration: opt('dragRevertDuration'),
@@ -574,10 +574,10 @@ function AgendaEventRenderer() {
 			drag: function(ev, ui) {
 				if (scroll) {
 		        	// reposition to grid
-					ui.position.top = origPosition.top + Math.floor((ui.position.top - origPosition.top) / granularityHeight) * granularityHeight;
+					ui.position.top = origPosition.top + Math.floor((ui.position.top - origPosition.top) / snapHeight) * snapHeight;
 		        }
 				ui.position.left = origPosition.left + (dayDelta * dis) * colWidth;
-				minuteDelta = Math.round((ui.position.top - origPosition.top) / granularityHeight) * granularityMinutes;
+				minuteDelta = Math.round((ui.position.top - origPosition.top) / snapHeight) * snapMinutes;
 
 				if (!allDay) {
 					updateTimeText(minuteDelta);
@@ -618,7 +618,7 @@ function AgendaEventRenderer() {
 			// convert back to original slot-event
 			if (allDay) {
 				timeElement.css('display', ''); // show() was causing display=inline
-				eventElement.draggable('option', 'grid', [colWidth, granularityHeight]);
+				eventElement.draggable('option', 'grid', [colWidth, snapHeight]);
 				allDay = false;
 			}
 		}
@@ -631,9 +631,9 @@ function AgendaEventRenderer() {
 	
 	
 	function resizableSlotEvent(event, eventElement, timeElement) {
-		var granularityDelta, prevGranularityDelta;
-		var granularityHeight = getGranularityHeight();
-		var granularityMinutes = getGranularityMinutes();
+		var snapDelta, prevSnapDelta;
+		var snapHeight = getSnapHeight();
+		var snapMinutes = getSnapMinutes();
 		
 		var minutesDelta = 0;
 		var origZIndex = eventElement.zIndex();		
@@ -645,9 +645,9 @@ function AgendaEventRenderer() {
 				s: 'div.ui-resizable-s',
 				n: 'div.ui-resizable-n'
 			},
-			grid: granularityHeight,
+			grid: snapHeight,
 			start: function(ev, ui) {
-				granularityDelta = prevGranularityDelta = 0;
+				snapDelta = prevSnapDelta = 0;
 				hideEvents(event, eventElement);
 				eventElement.zIndex(origZIndex + 1);
 				if ($(ev.originalEvent.target).hasClass("ui-resizable-s")) {
@@ -657,17 +657,17 @@ function AgendaEventRenderer() {
 				}
 				initialHeight = eventElement.height();
 				if (usedHandle === 'n') {
-					var diffToSlotGrid = (ui.originalPosition.top + 1) % granularityHeight;
+					var diffToSlotGrid = (ui.originalPosition.top + 1) % snapHeight;
 					if (diffToSlotGrid) {
-						var heightDiff = Math.round(diffToSlotGrid / granularityHeight) ? granularityHeight - diffToSlotGrid : -1 * diffToSlotGrid;
+						var heightDiff = Math.round(diffToSlotGrid / snapHeight) ? snapHeight - diffToSlotGrid : -1 * diffToSlotGrid;
 						// north handle used, adjust position.top of element to match current grid-size
 						ui.originalPosition.top = (ui.originalPosition.top) + heightDiff;
 						ui.originalSize.height = ui.originalSize.height - heightDiff;
 					}
 				} else {
-					var diffToSlotGrid = (ui.originalPosition.top + 1 + eventElement.outerHeight()) % granularityHeight;
+					var diffToSlotGrid = (ui.originalPosition.top + 1 + eventElement.outerHeight()) % snapHeight;
 					if (diffToSlotGrid) {
-						var heightDiff = Math.round(diffToSlotGrid / granularityHeight) ? granularityHeight - diffToSlotGrid : -1 * diffToSlotGrid;
+						var heightDiff = Math.round(diffToSlotGrid / snapHeight) ? snapHeight - diffToSlotGrid : -1 * diffToSlotGrid;
 						// south handle used, adjust height of element to match current grid-size
 						ui.originalSize.height = eventElement.height() + heightDiff;
 					}
@@ -676,20 +676,19 @@ function AgendaEventRenderer() {
 			},
 			resize: function(ev, ui) {
 				// don't rely on ui.size.height, doesn't take grid into account
-				granularityDelta = (eventElement.height() - initialHeight) / granularityHeight;				
-				
-				if (granularityDelta != prevGranularityDelta) {
-					var minutesDiffExact = Math.round(granularityMinutes * granularityDelta);
+				snapDelta = (eventElement.height() - initialHeight) / snapHeight;				
+				if (snapDelta != prevSnapDelta) {
+					var minutesDiffExact = Math.round(snapMinutes * snapDelta);
 					var minutesRoundedDiff = 0;
 					var eventStartDate = event.start;
 					if (usedHandle === 'n') {
 						eventStartDate = addMinutes(cloneDate(event.start), -1 * minutesDiffExact);
-						minutesRoundedDiff = roundToGranularityMinutes(eventStartDate);
+						minutesRoundedDiff = roundToSnapMinutes(eventStartDate);
 					}
 					var eventEndDate = event.end;
-					if (granularityDelta && eventEndDate && usedHandle === 's') {
+					if (snapDelta && eventEndDate && usedHandle === 's') {
 						eventEndDate = addMinutes(eventEnd(event), minutesDiffExact);
-						minutesRoundedDiff = roundToGranularityMinutes(eventEndDate);
+						minutesRoundedDiff = roundToSnapMinutes(eventEndDate);
 					}
 					
 					minutesDelta = minutesDiffExact - minutesRoundedDiff;
@@ -701,13 +700,13 @@ function AgendaEventRenderer() {
 							opt('timeFormat')
 						)
 					);
-					prevGranularityDelta = granularityDelta;
+					prevSnapDelta = snapDelta;
 				}
 				trigger('eventResizeProgress', this, event, ev, ui);
 			},
 			stop: function(ev, ui) {
 				trigger('eventResizeStop', this, event, ev, ui);
-				if (granularityDelta) {
+				if (snapDelta) {
 					eventResize(this, event, 0, minutesDelta, ev, ui, usedHandle === 'n');
 				}else{
 					timeElement.text(origTimeText);
@@ -719,13 +718,13 @@ function AgendaEventRenderer() {
 		});
 	}
 	
-	function roundToGranularityMinutes(date) {
+	function roundToSnapMinutes(date) {
 		if (!date) {
 			return 0;
 		}
-		var granularityMinutes = getGranularityMinutes();
+		var snapMinutes = getSnapMinutes();
 		var dateMinutes = Math.round(date.getTime() / 1000 / 60);
-		var dateMinutesRounded = Math.round(dateMinutes / granularityMinutes) * granularityMinutes;
+		var dateMinutesRounded = Math.round(dateMinutes / snapMinutes) * snapMinutes;
 		date.setTime(dateMinutesRounded * 60 * 1000);
 		return dateMinutesRounded - dateMinutes;
 	}

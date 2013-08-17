@@ -1,10 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel='stylesheet' href='../build/out/fullcalendar/fullcalendar.css' />
-<link rel='stylesheet' href='../build/out/fullcalendar/fullcalendar.print.css' media='print' />
-<script src='../build/deps.js'></script>
-<script src='../build/out/fullcalendar/fullcalendar.js'></script>
+<script src='../build/loader.js' data-debug='true'></script>
 <script>
 
 	$(document).ready(function() {
@@ -17,7 +14,7 @@
 		$('#calendar').fullCalendar({
 
 			//slotMinutes: 30, // 20
-			granularityMinutes: 15, // 5
+			snapMinutes: 15, // 5
 
 			selectable: true,
 			selectHelper: true,
