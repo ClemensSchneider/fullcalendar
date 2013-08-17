@@ -79,6 +79,8 @@ function AgendaEventRenderer() {
 			timeLineInterval = window.setInterval(setTimeIndicator, 30000);
 			setTimeIndicator();
 		}
+		
+		trigger('eventAfterAllRender');
 	}
 	
 	
