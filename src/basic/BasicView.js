@@ -51,6 +51,7 @@ function BasicView(element, calendar, viewName) {
 	
 	// locals
 	
+	var table;
 	var head;
 	var headCells;
 	var body;
@@ -88,17 +89,17 @@ function BasicView(element, calendar, viewName) {
 	disableTextSelection(element.addClass('fc-grid'));
 	
 	
-	function renderBasic(maxr, r, c, showNumbers) {
+	function renderBasic(r, c, showNumbers) {
 		rowCnt = r;
 		colCnt = c;
 		updateOptions();
 		var firstTime = !body;
 		if (firstTime) {
-			buildSkeleton(maxr, showNumbers);
+			buildEventContainer();
 		}else{
 			clearEvents();
 		}
-		updateCells(firstTime);
+		buildTable(showNumbers);
 	}
 	
 	
@@ -130,72 +131,7 @@ function BasicView(element, calendar, viewName) {
 	
 	
 	
-	function buildSkeleton(maxRowCnt, showNumbers) {
-		var s;
-		var headerClass = tm + "-widget-header";
-		var contentClass = tm + "-widget-content";
-		var i, j;
-		var table;
-		
-		s =
-			"<table class='fc-border-separate' style='width:100%' cellspacing='0'>" +
-			"<thead>" +
-			"<tr>";
-		if (showWeekNumbers) {
-			s +=
-				"<th class='fc-week-number " + headerClass + "'/>";
-		}
-		for (i=0; i<colCnt; i++) {
-			s +=
-				"<th class='fc- " + headerClass + "'/>"; // need fc- for setDayID
-		}
-		s +=
-			"</tr>" +
-			"</thead>" +
-			"<tbody>";
-		for (i=0; i<maxRowCnt; i++) {
-			s +=
-				"<tr class='fc-week" + i + "'>";
-			if (showWeekNumbers) {
-				s +=
-					"<td class='fc-week-number " + contentClass + "'><div></div></td>";
-			}
-			for (j=0; j<colCnt; j++) {
-				s +=
-					"<td class='fc- " + contentClass + " fc-day" + (i*colCnt+j) + "'>" + // need fc- for setDayID
-					"<div>" +
-					(showNumbers ?
-						"<div class='fc-day-number'/>" :
-						''
-						) +
-					"<div class='fc-day-content'>" +
-					"<div style='position:relative'>&nbsp;</div>" +
-					"</div>" +
-					"</div>" +
-					"</td>";
-			}
-			s +=
-				"</tr>";
-		}
-		s +=
-			"</tbody>" +
-			"</table>";
-		table = $(s).appendTo(element);
-		
-		head = table.find('thead');
-		headCells = head.find('th:not(.fc-week-number)');
-		body = table.find('tbody');
-		bodyRows = body.find('tr');
-		bodyCells = body.find('td').filter(':not(.fc-week-number)');
-		bodyFirstCells = bodyCells.filter(':first-child, td.fc-week-number + *'); // either first cell in each row, or immediately following week #
-		bodyCellTopInners = bodyRows.eq(0).find('div.fc-day-content div');
-		
-		markFirstLast(head.add(head.find('tr'))); // marks first+last tr/th's
-		markFirstLast(bodyRows); // marks first+last td's
-		bodyRows.eq(0).addClass('fc-first'); // fc-last is done in updateCells
-		
-		dayBind(bodyCells);
-		
+	function buildEventContainer() {
 		daySegmentContainer =
 			$("<div style='position:absolute;z-index:8;top:0;left:0'/>")
 				.appendTo(element);
@@ -203,68 +139,119 @@ function BasicView(element, calendar, viewName) {
 	
 	
 	
-	function updateCells(firstTime) {
-		var dowDirty = firstTime || rowCnt == 1; // could the cells' day-of-weeks need updating?
+	function buildTable(showNumbers) {
+		var html = '';
+		var i, j;
+		var headerClass = tm + "-widget-header";
+		var contentClass = tm + "-widget-content";
 		var month = t.start.getMonth();
 		var today = clearTime(new Date());
+		var cellDate; // not to be confused with local function. TODO: better names
+		var cellClasses;
 		var cell;
-		var date;
-		var row;
+
+		html += "<table class='fc-border-separate' style='width:100%' cellspacing='0'>" +
+		        "<thead>" +
+		        "<tr>";
+
+		if (showWeekNumbers) {
+			html += "<th class='fc-week-number " + headerClass + "'/>";
+		}
+
+		for (i=0; i<colCnt; i++) {
+			html += "<th class='fc-day-header fc-" + dayIDs[i] + " " + headerClass + "'/>";
+		}
+
+		html += "</tr>" +
+		        "</thead>" +
+		        "<tbody>";
+
+		for (i=0; i<rowCnt; i++) {
+			html += "<tr class='fc-week'>";
+
+			if (showWeekNumbers) {
+				html += "<td class='fc-week-number " + contentClass + "'>" +
+				        "<div/>" +
+				        "</td>";
+			}
+
+			for (j=0; j<colCnt; j++) {
+				cellDate = _cellDate(i, j); // a little confusing. cellDate is local variable. _cellDate is private function
+
+				cellClasses = [
+					'fc-day',
+					'fc-' + dayIDs[cellDate.getDay()],
+					contentClass
+				];
+				if (cellDate.getMonth() != month) {
+					cellClasses.push('fc-other-month');
+				}
+				if (+cellDate == +today) {
+					cellClasses.push('fc-today');
+					cellClasses.push(tm + '-state-highlight');
+				}
+
+				html += "<td" +
+				        " class='" + cellClasses.join(' ') + "'" +
+				        " data-date='" + formatDate(cellDate, 'yyyy-MM-dd') + "'" +
+				        ">" + 
+				        "<div>";
+				if (showNumbers) {
+					html += "<div class='fc-day-number'>" + cellDate.getDate() + "</div>";
+				}
+				html += "<div class='fc-day-content'>" +
+				        "<div style='position:relative'>&nbsp;</div>" +
+				        "</div>" +
+				        "</div>" +
+				        "</td>";
+			}
+
+			html += "</tr>";
+		}
+		html += "</tbody>" +
+		        "</table>";
+
+		lockHeight(); // the unlock happens later, in setHeight()...
+		if (table) {
+			table.remove();
+		}
+		table = $(html).appendTo(element);
+
+		head = table.find('thead');
+		headCells = head.find('.fc-day-header');
+		body = table.find('tbody');
+		bodyRows = body.find('tr');
+		bodyCells = body.find('.fc-day');
+		bodyFirstCells = bodyRows.find('td:first-child');
+		bodyCellTopInners = bodyRows.eq(0).find('.fc-day-content > div');
+		
+		markFirstLast(head.add(head.find('tr'))); // marks first+last tr/th's
+		markFirstLast(bodyRows); // marks first+last td's
+		bodyRows.eq(0).addClass('fc-first');
+		bodyRows.filter(':last').addClass('fc-last');
 	
 		if (showWeekNumbers) {
 			head.find('.fc-week-number').text(weekNumberTitle);
 		}
 
-		if (dowDirty) {
-			headCells.each(function(i, _cell) {
-				cell = $(_cell);
-				date = indexDate(i);
-				cell.html(formatDate(date, colFormat));
-				setDayID(cell, date);
+		headCells.each(function(i, _cell) {
+			var date = indexDate(i);
+			$(_cell).text(formatDate(date, colFormat));
+		});
+
+		if (showWeekNumbers) {
+			body.find('.fc-week-number > div').each(function(i, _cell) {
+				var weekStart = _cellDate(i, 0);
+				$(_cell).text(formatDate(weekStart, weekNumberFormat));
 			});
 		}
 		
 		bodyCells.each(function(i, _cell) {
-			cell = $(_cell);
-			date = indexDate(i);
-			if (date.getMonth() == month) {
-				cell.removeClass('fc-other-month');
-			}else{
-				cell.addClass('fc-other-month');
-			}
-			if (+date == +today) {
-				cell.addClass(tm + '-state-highlight fc-today');
-			}else{
-				cell.removeClass(tm + '-state-highlight fc-today');
-			}
-			cell.find('div.fc-day-number').text(date.getDate());
-			cell.attr('data-date', $.fullCalendar.formatDate(date, "yyyyMMdd"));
-			if (dowDirty) {
-				setDayID(cell, date);
-			}
+			var date = indexDate(i);
+			trigger('dayRender', t, date, $(_cell));
 		});
-		
-		bodyRows.each(function(i, _row) {
-			row = $(_row);
-			if (i < rowCnt) {
 
-				if (showWeekNumbers) {
-					var weekStartDate = indexDate(i*7);
-					row.find('.fc-week-number > div').text(
-						formatDate(weekStartDate, weekNumberFormat)
-					);
-				}
-
-				row.show();
-				if (i == rowCnt-1) {
-					row.addClass('fc-last');
-				}else{
-					row.removeClass('fc-last');
-				}
-			}else{
-				row.hide();
-			}
-		});
+		dayBind(bodyCells);
 	}
 	
 	
@@ -294,6 +281,7 @@ function BasicView(element, calendar, viewName) {
 			}
 		});
 		
+		unlockHeight();
 	}
 	
 	
@@ -324,8 +312,7 @@ function BasicView(element, calendar, viewName) {
 	
 	function dayClick(ev) {
 		if (!opt('selectable')) { // if selectable, SelectionManager will worry about dayClick
-			var index = parseInt(this.className.match(/fc\-day(\d+)/)[1]); // TODO: maybe use .data
-			var date = indexDate(index);
+			var date = parseISO8601($(this).data('date'));
 			trigger('dayClick', this, date, true, ev);
 		}
 	}
@@ -525,6 +512,19 @@ function BasicView(element, calendar, viewName) {
 			right: viewWidth
 		};
 	}
-	
+
+
+
+	// makes sure height doesn't collapse while we destroy/render new cells
+	// (this causes a bad end-user scrollbar jump)
+	// TODO: generalize this for all view rendering. (also in Calendar.js)
+
+	function lockHeight() {
+		setMinHeight(element, element.height());
+	}
+
+	function unlockHeight() {
+		setMinHeight(element, 1);
+	}
 	
 }

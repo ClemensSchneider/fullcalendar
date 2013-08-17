@@ -77,6 +77,14 @@ function EventManager(options, _sources) {
 		_fetchEventSource(source, function(events) {
 			if (fetchID == currentFetchID) {
 				if (events) {
+
+					if (options.eventTransform) {
+						events = $.map(events, options.eventTransform);
+					}
+					if (source.eventTransform) {
+						events = $.map(events, source.eventTransform);
+					}
+				
 					for (var i=0; i<events.length; i++) {
 						events[i].source = source;
 						normalizeEvent(events[i]);
