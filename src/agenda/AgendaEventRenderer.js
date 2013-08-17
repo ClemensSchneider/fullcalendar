@@ -36,6 +36,8 @@ function AgendaEventRenderer() {
 	var getColCnt = t.getColCnt;
 	var getColWidth = t.getColWidth;
 	var getSlotHeight = t.getSlotHeight;
+	var getGranularityHeight = t.getGranularityHeight;
+	var getGranularityMinutes = t.getGranularityMinutes;
 	var getBodyContent = t.getBodyContent;
 	var reportEventElement = t.reportEventElement;
 	var showEvents = t.showEvents;
@@ -47,7 +49,6 @@ function AgendaEventRenderer() {
 	var calendar = t.calendar;
 	var formatDate = calendar.formatDate;
 	var formatDates = calendar.formatDates;
-	var getSelectionSlotRatio = t.getSelectionSlotRatio; // read selection slot ratio
 	var timeLineInterval;
 	
 	
@@ -456,8 +457,8 @@ function AgendaEventRenderer() {
 									setOuterHeight(
 										eventElement,
 										slotHeight * Math.round(
-											(event.end ? ((event.end - event.start) / MINUTE_MS) : opt('defaultEventMinutes'))
-											/ opt('slotMinutes')
+											(event.end ? ((event.end - event.start) / MINUTE_MS) : opt('defaultEventMinutes')) /
+												opt('slotMinutes')
 										)
 									);
 									eventElement.draggable('option', 'grid', [colWidth, 1]);
@@ -524,13 +525,16 @@ function AgendaEventRenderer() {
 		var hoverListener = getHoverListener();
 		var colCnt = getColCnt();
 		var colWidth = getColWidth();
-		var slotHeight = getSlotHeight() / getSelectionSlotRatio();		// calculate height depending on selection slot ratio
+		var granularityHeight = getGranularityHeight();
+		var granularityMinutes = getGranularityMinutes();
+
 		var scroll = opt('scrollWhileDragging');
 		var prevTimeText = timeElement.text();
+		
 		eventElement.draggable({
 			zIndex: origZIndex + 1,
 			scroll: scroll,
-			grid: [colWidth, slotHeight],
+			grid: [colWidth, granularityHeight],
 			axis: colCnt==1 ? 'y' : false,
 			opacity: opt('dragOpacity'),
 			revertDuration: opt('dragRevertDuration'),
@@ -569,10 +573,11 @@ function AgendaEventRenderer() {
 			drag: function(ev, ui) {
 				if (scroll) {
 		        	// reposition to grid
-					ui.position.top = origPosition.top + Math.floor((ui.position.top - origPosition.top) / slotHeight) * slotHeight;
+					ui.position.top = origPosition.top + Math.floor((ui.position.top - origPosition.top) / granularityHeight) * granularityHeight;
 		        }
 				ui.position.left = origPosition.left + (dayDelta * dis) * colWidth;
-				minuteDelta = Math.round((ui.position.top - origPosition.top) / slotHeight) * opt('selectionSlotMinutes');
+				minuteDelta = Math.round((ui.position.top - origPosition.top) / granularityHeight) * granularityMinutes;
+
 				if (!allDay) {
 					updateTimeText(minuteDelta);
 				}
@@ -612,7 +617,7 @@ function AgendaEventRenderer() {
 			// convert back to original slot-event
 			if (allDay) {
 				timeElement.css('display', ''); // show() was causing display=inline
-				eventElement.draggable('option', 'grid', [colWidth, slotHeight]);
+				eventElement.draggable('option', 'grid', [colWidth, granularityHeight]);
 				allDay = false;
 			}
 		}
@@ -625,8 +630,10 @@ function AgendaEventRenderer() {
 	
 	
 	function resizableSlotEvent(event, eventElement, timeElement) {
-		var slotDelta, prevSlotDelta;
-		var slotHeight = getSlotHeight() / getSelectionSlotRatio();		// calculate height depending on selection slot ratio
+		var granularityDelta, prevGranularityDelta;
+		var granularityHeight = getGranularityHeight();
+		var granularityMinutes = getGranularityMinutes();
+		
 		var minutesDelta = 0;
 		var origZIndex = eventElement.zIndex();		
 		var usedHandle;
@@ -637,9 +644,9 @@ function AgendaEventRenderer() {
 				s: 'div.ui-resizable-s',
 				n: 'div.ui-resizable-n'
 			},
-			grid: slotHeight,
+			grid: granularityHeight,
 			start: function(ev, ui) {
-				slotDelta = prevSlotDelta = 0;
+				granularityDelta = prevGranularityDelta = 0;
 				hideEvents(event, eventElement);
 				eventElement.zIndex(origZIndex + 1);
 				if ($(ev.originalEvent.target).hasClass("ui-resizable-s")) {
@@ -649,17 +656,17 @@ function AgendaEventRenderer() {
 				}
 				initialHeight = eventElement.height();
 				if (usedHandle === 'n') {
-					var diffToSlotGrid = (ui.originalPosition.top + 1) % slotHeight;
+					var diffToSlotGrid = (ui.originalPosition.top + 1) % granularityHeight;
 					if (diffToSlotGrid) {
-						var heightDiff = Math.round(diffToSlotGrid / slotHeight) ? slotHeight - diffToSlotGrid : -1 * diffToSlotGrid;
+						var heightDiff = Math.round(diffToSlotGrid / granularityHeight) ? granularityHeight - diffToSlotGrid : -1 * diffToSlotGrid;
 						// north handle used, adjust position.top of element to match current grid-size
 						ui.originalPosition.top = (ui.originalPosition.top) + heightDiff;
 						ui.originalSize.height = ui.originalSize.height - heightDiff;
 					}
 				} else {
-					var diffToSlotGrid = (ui.originalPosition.top + 1 + eventElement.outerHeight()) % slotHeight;
+					var diffToSlotGrid = (ui.originalPosition.top + 1 + eventElement.outerHeight()) % granularityHeight;
 					if (diffToSlotGrid) {
-						var heightDiff = Math.round(diffToSlotGrid / slotHeight) ? slotHeight - diffToSlotGrid : -1 * diffToSlotGrid;
+						var heightDiff = Math.round(diffToSlotGrid / granularityHeight) ? granularityHeight - diffToSlotGrid : -1 * diffToSlotGrid;
 						// south handle used, adjust height of element to match current grid-size
 						ui.originalSize.height = eventElement.height() + heightDiff;
 					}
@@ -668,20 +675,20 @@ function AgendaEventRenderer() {
 			},
 			resize: function(ev, ui) {
 				// don't rely on ui.size.height, doesn't take grid into account
-				slotDelta = (eventElement.height() - initialHeight) / slotHeight;
-				var selectionSlotMinutes = opt('selectionSlotMinutes');
-				if (slotDelta != prevSlotDelta) {
-					var minutesDiffExact = Math.round(selectionSlotMinutes * slotDelta);
+				granularityDelta = (eventElement.height() - initialHeight) / granularityHeight;				
+				
+				if (granularityDelta != prevGranularityDelta) {
+					var minutesDiffExact = Math.round(granularityMinutes * granularityDelta);
 					var minutesRoundedDiff = 0;
 					var eventStartDate = event.start;
 					if (usedHandle === 'n') {
 						eventStartDate = addMinutes(cloneDate(event.start), -1 * minutesDiffExact);
-						minutesRoundedDiff = roundToSelectionSlotMinutes(eventStartDate);
+						minutesRoundedDiff = roundToGranularityMinutes(eventStartDate);
 					}
 					var eventEndDate = event.end;
-					if (slotDelta && eventEndDate && usedHandle === 's') {
+					if (granularityDelta && eventEndDate && usedHandle === 's') {
 						eventEndDate = addMinutes(eventEnd(event), minutesDiffExact);
-						minutesRoundedDiff = roundToSelectionSlotMinutes(eventEndDate);
+						minutesRoundedDiff = roundToGranularityMinutes(eventEndDate);
 					}
 					
 					minutesDelta = minutesDiffExact - minutesRoundedDiff;
@@ -693,13 +700,13 @@ function AgendaEventRenderer() {
 							opt('timeFormat')
 						)
 					);
-					prevSlotDelta = slotDelta;
+					prevGranularityDelta = granularityDelta;
 				}
 				trigger('eventResizeProgress', this, event, ev, ui);
 			},
 			stop: function(ev, ui) {
 				trigger('eventResizeStop', this, event, ev, ui);
-				if (slotDelta) {
+				if (granularityDelta) {
 					eventResize(this, event, 0, minutesDelta, ev, ui, usedHandle === 'n');
 				}else{
 					timeElement.text(origTimeText);
@@ -711,13 +718,13 @@ function AgendaEventRenderer() {
 		});
 	}
 	
-	function roundToSelectionSlotMinutes(date) {
+	function roundToGranularityMinutes(date) {
 		if (!date) {
 			return 0;
 		}
-		var selectionSlotMinutes = opt('selectionSlotMinutes');
+		var granularityMinutes = getGranularityMinutes();
 		var dateMinutes = Math.round(date.getTime() / 1000 / 60);
-		var dateMinutesRounded = Math.round(dateMinutes / selectionSlotMinutes) * selectionSlotMinutes;
+		var dateMinutesRounded = Math.round(dateMinutes / granularityMinutes) * granularityMinutes;
 		date.setTime(dateMinutesRounded * 60 * 1000);
 		return dateMinutesRounded - dateMinutes;
 	}
