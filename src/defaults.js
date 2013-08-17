@@ -8,11 +8,16 @@ var defaults = {
 		left: 'title',
 		center: '',
 		right: 'today prev,next'
-	},
+	},	
 	weekends: true,
+	weekNumbers: false,
+	weekNumberCalculation: 'iso',
+	weekNumberTitle: 'W',
+	
 	currentTimeIndicator: false,
-
 	selectionSpacer: true,
+	ignoreEventOverlap: false,
+
 	ignoreEventOverlap: false,
 	
 	// editing
