@@ -267,7 +267,7 @@ function AgendaEventRenderer() {
 				seg.vsides = val === undefined ? (vsideCache[key] = vsides(eventElement, true)) : val;
 				val = hsideCache[key];
 				seg.hsides = val === undefined ? (hsideCache[key] = hsides(eventElement, true)) : val;
-				contentElement = eventElement.find('div.fc-event-content');
+				contentElement = eventElement.find('.fc-event-content');
 				if (contentElement.length) {
 					seg.contentTop = contentElement[0].offsetTop;
 				}
@@ -300,16 +300,15 @@ function AgendaEventRenderer() {
 		var html = "<";
 		var url = event.url;
 		var skinCss = getSkinCss(event, opt);
-		var skinCssAttr = (skinCss ? " style='" + skinCss + "'" : '');
-		var classes = ['fc-event', 'fc-event-skin', 'fc-event-vert'];
+		var classes = ['fc-event', 'fc-event-vert'];
 		if (isEventDraggable(event)) {
 			classes.push('fc-event-draggable');
 		}
 		if (seg.isStart) {
-			classes.push('fc-corner-top');
+			classes.push('fc-event-start');
 		}
 		if (seg.isEnd) {
-			classes.push('fc-corner-bottom');
+			classes.push('fc-event-end');
 		}
 		classes = classes.concat(event.className);
 		if (event.source) {
@@ -326,13 +325,13 @@ function AgendaEventRenderer() {
 			">";
 		if (!opt('createEmptyAgendaEvents')) {
 			html +=
-				"<div class='fc-event-inner fc-event-skin'" + skinCssAttr + ">";
+				"<div class='fc-event-inner fc-event-skin'>";
 			if (opt('allowResizeTop') && seg.isStart && isEventResizable(event)) {
 				html +=
 					"<div class='ui-resizable-handle ui-resizable-n'>=</div>";
 			}
 			html +=
-				"<div class='fc-event-head fc-event-skin'" + skinCssAttr + ">" +
+				"<div class='fc-event-head fc-event-skin'>" +
 				"<div class='fc-event-time'>" +
 				htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
 				"</div>" +
