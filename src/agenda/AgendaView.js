@@ -336,7 +336,7 @@ function AgendaView(element, calendar, viewName) {
 		var headCell;
 		var bodyCell;
 		var date;
-		var today = dateManager.clearTime(new Date());
+		var today = dateManager.clearTime(dateManager.currentDate());
 
 		if (showWeekNumbers) {
 			var weekText = dateManager.formatDate(colDate(0), weekNumberFormat);

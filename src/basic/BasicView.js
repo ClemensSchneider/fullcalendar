@@ -146,7 +146,7 @@ function BasicView(element, calendar, viewName) {
 		var headerClass = tm + "-widget-header";
 		var contentClass = tm + "-widget-content";
 		var month = t.start.getMonth();
-		var today = dateManager.clearTime(new Date());
+		var today = dateManager.clearTime(dateManager.currentDate());
 		var cellDate; // not to be confused with local function. TODO: better names
 		var cellClasses;
 		var cell;

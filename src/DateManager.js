@@ -170,7 +170,14 @@ function DateManager(options) {
 		return new Date(+d);
 	}
 
-
+	function currentDate() {
+		var dateNow = new Date();
+		if (options.utcMode) {
+			dateNow.setTime(dateNow.getTime() + dateNow.getTimezoneOffset() * 60 * 1000);
+		}
+		return dateNow;
+	}
+	
 	function zeroDate() { // returns a Date with time 00:00:00 and dateOfMonth=1
 		var i=0, d;
 		do {
