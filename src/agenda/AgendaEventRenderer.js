@@ -390,7 +390,7 @@ function AgendaEventRenderer() {
 			timeline = $('<hr>').addClass('fc-timeline').appendTo(container);
 		}
 
-		var cur_time = new Date();
+		var cur_time = dateManager.currentDate();
 		if (t.visStart < cur_time && t.visEnd > cur_time) {
 			timeline.show();
 		}
@@ -399,7 +399,7 @@ function AgendaEventRenderer() {
 			return;
 		}
 
-		var secs = (cur_time.getHours() * 60 * 60) + (cur_time.getMinutes() * 60) + cur_time.getSeconds();
+		var secs = (dateManager.getHours(cur_time) * 60 * 60) + (dateManager.getMinutes(cur_time) * 60) + dateManager.getSeconds(cur_time);
 		var percents = secs / 86400; // 24 * 60 * 60 = 86400, # of seconds in a day
 
 		timeline.css('top', Math.floor(container.height() * percents - 1) + 'px');
