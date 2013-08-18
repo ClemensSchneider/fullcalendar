@@ -26,6 +26,7 @@ function DateManager(options) {
 	t.addMinutes = addMinutes;
 	t.clearTime = clearTime;
 	t.cloneDate = cloneDate;
+	t.currentDate = currentDate;
 	t.zeroDate = zeroDate;
 	t.skipWeekend = skipWeekend;
 	t.dayDiff = dayDiff;
