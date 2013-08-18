@@ -39,7 +39,7 @@ function Calendar(element, options, eventSources) {
 	var fetchEvents = t.fetchEvents;
 	
 	var segmentManager = {};
-	SegmentMath.call(segmentManager, dateManager, options);
+	SegmentManager.call(segmentManager, dateManager, options);
 	t.segmentManager = segmentManager;
 	
 	// locals
@@ -55,7 +55,7 @@ function Calendar(element, options, eventSources) {
 	var absoluteViewElement;
 	var resizeUID = 0;
 	var ignoreWindowResize = 0;
-	var date = new Date();
+	var date = dateManager.currentDate();
 	var events = [];
 	var _dragElement;
 	
@@ -233,7 +233,7 @@ function Calendar(element, options, eventSources) {
 			elementOuterWidth = element.outerWidth();
 			
 			header.updateTitle(currentView.title);
-			var today = new Date();
+			var today = dateManager.currentDate();
 			if (today >= currentView.start && today < currentView.end) {
 				header.disableButton('today');
 			}else{
@@ -422,7 +422,7 @@ function Calendar(element, options, eventSources) {
 	
 	
 	function today() {
-		date = new Date();
+		date = dateManager.currentDate();
 		renderView();
 	}
 	
