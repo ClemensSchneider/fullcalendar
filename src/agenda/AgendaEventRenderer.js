@@ -48,6 +48,8 @@ function AgendaEventRenderer() {
 	var calendar = t.calendar;
 	var formatDate = calendar.formatDate;
 	var formatDates = calendar.formatDates;
+	var dateManager = calendar.dateManager;
+	var segmentManager = calendar.segmentManager;
 	var timeLineInterval;
 	
 	
@@ -92,7 +94,7 @@ function AgendaEventRenderer() {
 	
 	
 	function compileDaySegs(events) {
-		var levels = stackSegs(sliceSegs(events, $.map(events, exclEndDay), t.visStart, t.visEnd), opt),
+		var levels = segmentManager.stackSegs(segmentManager.sliceSegs(events, $.map(events, exclEndDay), t.visStart, t.visEnd), opt),
 			i, levelCnt=levels.length, level,
 			j, seg,
 			segs=[];
@@ -113,14 +115,14 @@ function AgendaEventRenderer() {
 		var colCnt = getColCnt(),
 			minMinute = getMinMinute(),
 			maxMinute = getMaxMinute(),
-			d = addMinutes(cloneDate(t.visStart), minMinute),
+			d = dateManager.addMinutes(dateManager.cloneDate(t.visStart), minMinute),
 			visEventEnds = $.map(events, slotEventEnd),
 			i, col,
 			j, level,
 			k, seg,
 			segs=[];
 		for (i=0; i<colCnt; i++) {
-			col = stackSegs(sliceSegs(events, visEventEnds, d, addMinutes(cloneDate(d), maxMinute-minMinute)), opt);
+			col = segmentManager.stackSegs(segmentManager.sliceSegs(events, visEventEnds, d, dateManager.addMinutes(dateManager.cloneDate(d), maxMinute-minMinute)), opt);
 			countForwardSegs(col);
 			for (j=0; j<col.length; j++) {
 				level = col[j];
@@ -131,7 +133,7 @@ function AgendaEventRenderer() {
 					segs.push(seg);
 				}
 			}
-			addDays(d, 1, true);
+			dateManager.addDays(d, 1, true);
 		}
 		return segs;
 	}
@@ -139,9 +141,9 @@ function AgendaEventRenderer() {
 	
 	function slotEventEnd(event) {
 		if (event.end) {
-			return cloneDate(event.end);
+			return dateManager.cloneDate(event.end);
 		}else{
-			return addMinutes(cloneDate(event.start), opt('defaultEventMinutes'));
+			return dateManager.addMinutes(dateManager.cloneDate(event.start), opt('defaultEventMinutes'));
 		}
 	}
 	
@@ -446,8 +448,8 @@ function AgendaEventRenderer() {
 						if (!cell.row) {
 							// on full-days
 							renderDayOverlay(
-								addDays(cloneDate(event.start), dayDelta),
-								addDays(exclEndDay(event), dayDelta)
+								dateManager.addDays(dateManager.cloneDate(event.start), dayDelta),
+								dateManager.addDays(exclEndDay(event), dayDelta)
 							);
 							resetElement();
 						}else{
@@ -495,7 +497,7 @@ function AgendaEventRenderer() {
 						minuteDelta = Math.round((eventElement.offset().top - getBodyContent().offset().top) / snapHeight)
 							* snapMinutes
 							+ minMinute
-							- (event.start.getHours() * 60 + event.start.getMinutes());
+							- (dateManager.getHours(event.start) * 60 + dateManager.getMinutes(event.start));
 					}
 					eventDrop(this, event, dayDelta, minuteDelta, allDay, ev, ui);
 				}
@@ -562,8 +564,8 @@ function AgendaEventRenderer() {
 								eventElement.draggable('option', 'grid', null);
 							}
 							renderDayOverlay(
-								addDays(cloneDate(event.start), dayDelta),
-								addDays(exclEndDay(event), dayDelta)
+								dateManager.addDays(dateManager.cloneDate(event.start), dayDelta),
+								dateManager.addDays(dateManager.exclEndDay(event), dayDelta)
 							);
 						}else{
 							// on slots
@@ -608,10 +610,10 @@ function AgendaEventRenderer() {
 			}
 		});
 		function updateTimeText(minuteDelta) {
-			var newStart = addMinutes(cloneDate(event.start), minuteDelta);
+			var newStart = dateManager.addMinutes(dateManager.cloneDate(event.start), minuteDelta);
 			var newEnd;
 			if (event.end) {
-				newEnd = addMinutes(cloneDate(event.end), minuteDelta);
+				newEnd = dateManager.addMinutes(dateManager.cloneDate(event.end), minuteDelta);
 			}
 			timeElement.text(formatDates(newStart, newEnd, opt('timeFormat')));
 		}

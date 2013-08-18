@@ -14,25 +14,26 @@ function AgendaWeekView(element, calendar) {
 	var opt = t.opt;
 	var renderAgenda = t.renderAgenda;
 	var formatDates = calendar.formatDates;
+	var dateManager = calendar.dateManager;
 	
 	
 	
 	function render(date, delta) {
 		if (delta) {
-			addDays(date, delta * 7);
+			dateManager.addDays(date, delta * 7);
 		}
-		var start = addDays(cloneDate(date), -((date.getDay() - opt('firstDay') + 7) % 7));
-		var end = addDays(cloneDate(start), 7);
-		var visStart = cloneDate(start);
-		var visEnd = cloneDate(end);
+		var start = dateManager.addDays(dateManager.cloneDate(date), -((dateManager.getDay(date) - opt('firstDay') + 7) % 7));
+		var end = dateManager.addDays(dateManager.cloneDate(start), 7);
+		var visStart = dateManager.cloneDate(start);
+		var visEnd = dateManager.cloneDate(end);
 		var weekends = opt('weekends');
 		if (!weekends) {
-			skipWeekend(visStart);
-			skipWeekend(visEnd, -1, true);
+			dateManager.skipWeekend(visStart);
+			dateManager.skipWeekend(visEnd, -1, true);
 		}
 		t.title = formatDates(
 			visStart,
-			addDays(cloneDate(visEnd), -1),
+			dateManager.addDays(dateManager.cloneDate(visEnd), -1),
 			opt('titleFormat')
 		);
 		t.start = start;

@@ -1,5 +1,5 @@
 
-function BasicEventRenderer() {
+function BasicEventRenderer(adteManager, segmentManager) {
 	var t = this;
 	
 	
@@ -54,15 +54,15 @@ function BasicEventRenderer() {
 	function compileSegs(events) {
 		var rowCnt = getRowCnt(),
 			colCnt = getColCnt(),
-			d1 = cloneDate(t.visStart),
-			d2 = addDays(cloneDate(d1), colCnt),
+			d1 = dateManager.cloneDate(t.visStart),
+			d2 = dateManager.addDays(dateManager.cloneDate(d1), colCnt),
 			visEventsEnds = $.map(events, exclEndDay),
 			i, row,
 			j, level,
 			k, seg,
 			segs=[];
 		for (i=0; i<rowCnt; i++) {
-			row = stackSegs(sliceSegs(events, visEventsEnds, d1, d2), opt);
+			row = segmentManager.stackSegs(segmentManager.sliceSegs(events, visEventsEnds, d1, d2), opt);
 			for (j=0; j<row.length; j++) {
 				level = row[j];
 				for (k=0; k<level.length; k++) {
@@ -72,8 +72,8 @@ function BasicEventRenderer() {
 					segs.push(seg);
 				}
 			}
-			addDays(d1, 7);
-			addDays(d2, 7);
+			dateManager.addDays(d1, 7);
+			dateManager.addDays(d2, 7);
 		}
 		return segs;
 	}
@@ -115,8 +115,8 @@ function BasicEventRenderer() {
 						//setOverflowHidden(true);
 						dayDelta = rowDelta*7 + colDelta * (opt('isRTL') ? -1 : 1);
 						renderDayOverlay(
-							addDays(cloneDate(event.start), dayDelta),
-							addDays(exclEndDay(event), dayDelta)
+							dateManager.addDays(cloneDate(event.start), dayDelta),
+							dateManager.addDays(exclEndDay(event), dayDelta)
 						);
 					}else{
 						//setOverflowHidden(false);

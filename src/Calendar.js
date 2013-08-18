@@ -3,6 +3,9 @@
 function Calendar(element, options, eventSources) {
 	var t = this;
 	
+	var dateManager = {};
+	DateManager.call(dateManager, options);
+	t.dateManager = dateManager;
 	
 	// exports
 	t.options = options;
@@ -22,8 +25,8 @@ function Calendar(element, options, eventSources) {
 	t.today = today;
 	t.gotoDate = gotoDate;
 	t.incrementDate = incrementDate;
-	t.formatDate = function(format, date) { return formatDate(format, date, options) };
-	t.formatDates = function(format, date1, date2) { return formatDates(format, date1, date2, options) };
+	t.formatDate = dateManager.formatDate;
+	t.formatDates = dateManager.formatDates;
 	t.getDate = getDate;
 	t.getView = getView;
 	t.option = option;
@@ -31,10 +34,13 @@ function Calendar(element, options, eventSources) {
 	
 	
 	// imports
-	EventManager.call(t, options, eventSources);
+	EventManager.call(t, dateManager, options, eventSources);
 	var isFetchNeeded = t.isFetchNeeded;
 	var fetchEvents = t.fetchEvents;
 	
+	var segmentManager = {};
+	SegmentMath.call(segmentManager, dateManager, options);
+	t.segmentManager = segmentManager;
 	
 	// locals
 	var _element = element[0];
@@ -59,7 +65,7 @@ function Calendar(element, options, eventSources) {
 	-----------------------------------------------------------------------------*/
 	
 	
-	setYMD(date, options.year, options.month, options.date);
+	dateManager.setYMD(date, options.year, options.month, options.date);
 	
 	
 	function render(inc) {
@@ -404,13 +410,13 @@ function Calendar(element, options, eventSources) {
 	
 	
 	function prevYear() {
-		addYears(date, -1);
+		dateManager.addYears(date, -1);
 		renderView();
 	}
 	
 	
 	function nextYear() {
-		addYears(date, 1);
+		dateManager.addYears(date, 1);
 		renderView();
 	}
 	
@@ -423,9 +429,9 @@ function Calendar(element, options, eventSources) {
 	
 	function gotoDate(year, month, dateOfMonth) {
 		if (year instanceof Date) {
-			date = cloneDate(year); // provided 1 argument, a Date
+			date = dateManager.cloneDate(year); // provided 1 argument, a Date
 		}else{
-			setYMD(date, year, month, dateOfMonth);
+			dateManager.setYMD(date, year, month, dateOfMonth);
 		}
 		renderView();
 	}
@@ -433,20 +439,20 @@ function Calendar(element, options, eventSources) {
 	
 	function incrementDate(years, months, days) {
 		if (years !== undefined) {
-			addYears(date, years);
+			dateManager.addYears(date, years);
 		}
 		if (months !== undefined) {
-			addMonths(date, months);
+			dateManager.addMonths(date, months);
 		}
 		if (days !== undefined) {
-			addDays(date, days);
+			dateManager.addDays(date, days);
 		}
 		renderView();
 	}
 	
 	
 	function getDate() {
-		return cloneDate(date);
+		return dateManager.cloneDate(date);
 	}
 	
 	

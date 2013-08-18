@@ -10,7 +10,7 @@ var ajaxDefaults = {
 var eventGUID = 1;
 
 
-function EventManager(options, _sources) {
+function EventManager(dateManager, options, _sources) {
 	var t = this;
 	
 	
@@ -122,7 +122,7 @@ function EventManager(options, _sources) {
 		if (events) {
 			if ($.isFunction(events)) {
 				pushLoading();
-				events(cloneDate(rangeStart), cloneDate(rangeEnd), function(events) {
+				events(dateManager.cloneDate(rangeStart), dateManager.cloneDate(rangeEnd), function(events) {
 					callback(events);
 					popLoading();
 				});
@@ -348,12 +348,12 @@ function EventManager(options, _sources) {
 			}
 			delete event.date;
 		}
-		event._start = cloneDate(event.start = parseDate(event.start, ignoreTimezone));
-		event.end = parseDate(event.end, ignoreTimezone);
+		event._start = dateManager.cloneDate(event.start = dateManager.parseDate(event.start, ignoreTimezone));
+		event.end = dateManager.parseDate(event.end, ignoreTimezone);
 		if (event.end && event.end <= event.start) {
 			event.end = null;
 		}
-		event._end = event.end ? cloneDate(event.end) : null;
+		event._end = event.end ? dateManager.cloneDate(event.end) : null;
 		if (event.allDay === undefined) {
 			event.allDay = firstDefined(source.allDayDefault, options.allDayDefault);
 		}

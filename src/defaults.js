@@ -27,6 +27,8 @@ var defaults = {
 	
 	allDayDefault: true,
 	ignoreTimezone: true,
+	utcMode: false,
+
 	
 	// event ajax
 	lazyFetching: true,

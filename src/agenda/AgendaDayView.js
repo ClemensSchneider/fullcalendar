@@ -14,18 +14,18 @@ function AgendaDayView(element, calendar) {
 	var opt = t.opt;
 	var renderAgenda = t.renderAgenda;
 	var formatDate = calendar.formatDate;
-	
+	var dateManager = calendar.dateManager;
 	
 	
 	function render(date, delta) {
 		if (delta) {
-			addDays(date, delta);
+			dateManager.addDays(date, delta);
 			if (!opt('weekends')) {
-				skipWeekend(date, delta < 0 ? -1 : 1);
+				dateManager.skipWeekend(date, delta < 0 ? -1 : 1);
 			}
 		}
-		var start = cloneDate(date, true);
-		var end = addDays(cloneDate(start), 1);
+		var start = dateManager.cloneDate(date, true);
+		var end = dateManager.addDays(dateManager.cloneDate(start), 1);
 		t.title = formatDate(date, opt('titleFormat'));
 		t.start = t.visStart = start;
 		t.end = t.visEnd = end;

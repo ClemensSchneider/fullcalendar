@@ -14,6 +14,7 @@ function Header(calendar, options) {
 	
 	
 	// locals
+	var dateManager = calendar.dataManager;
 	var element = $([]);
 	var tm;
 	
