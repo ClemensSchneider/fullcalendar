@@ -39,7 +39,7 @@ function BasicView(element, calendar, viewName) {
 	View.call(t, element, calendar, viewName);
 	OverlayManager.call(t);
 	SelectionManager.call(t);
-	BasicEventRenderer.call(t);
+	BasicEventRenderer.call(t, calendar.dateManager, calendar.segmentManager);
 	var opt = t.opt;
 	var trigger = t.trigger;
 	var clearEvents = t.clearEvents;
@@ -47,6 +47,7 @@ function BasicView(element, calendar, viewName) {
 	var clearOverlays = t.clearOverlays;
 	var daySelectionMousedown = t.daySelectionMousedown;
 	var formatDate = calendar.formatDate;
+	var dateManager = calendar.dateManager;
 	
 	
 	// locals
@@ -145,7 +146,7 @@ function BasicView(element, calendar, viewName) {
 		var headerClass = tm + "-widget-header";
 		var contentClass = tm + "-widget-content";
 		var month = t.start.getMonth();
-		var today = clearTime(new Date());
+		var today = dateManager.clearTime(new Date());
 		var cellDate; // not to be confused with local function. TODO: better names
 		var cellClasses;
 		var cell;
@@ -160,7 +161,7 @@ function BasicView(element, calendar, viewName) {
 
 		for (i=0; i<colCnt; i++) {
 			cellDate = _cellDate(0, i); // a little confusing. cellDate is local variable. _cellDate is private function
-			html += "<th class='fc-day-header fc-" + dayIDs[cellDate.getDay()] + " " + headerClass + "'/>";
+			html += "<th class='fc-day-header fc-" + dayIDs[dateManager.getDay(cellDate)] + " " + headerClass + "'/>";
 		}
 
 		html += "</tr>" +
@@ -181,10 +182,10 @@ function BasicView(element, calendar, viewName) {
 
 				cellClasses = [
 					'fc-day',
-					'fc-' + dayIDs[cellDate.getDay()],
+					'fc-' + dayIDs[dateManager.getDay(cellDate)],
 					contentClass
 				];
-				if (cellDate.getMonth() != month) {
+				if (dateManager.getMonth(cellDate) != month) {
 					cellClasses.push('fc-other-month');
 				}
 				if (+cellDate == +today) {
@@ -194,11 +195,11 @@ function BasicView(element, calendar, viewName) {
 
 				html += "<td" +
 				        " class='" + cellClasses.join(' ') + "'" +
-				        " data-date='" + formatDate(cellDate, 'yyyy-MM-dd') + "'" +
+				        " data-date='" + dateManager.formatDate(cellDate, 'yyyy-MM-dd') + "'" +
 				        ">" + 
 				        "<div>";
 				if (showNumbers) {
-					html += "<div class='fc-day-number'>" + cellDate.getDate() + "</div>";
+					html += "<div class='fc-day-number'>" + dateManager.getDate(cellDate) + "</div>";
 				}
 				html += "<div class='fc-day-content'>" +
 				        "<div style='position:relative'>&nbsp;</div>" +
@@ -237,13 +238,13 @@ function BasicView(element, calendar, viewName) {
 
 		headCells.each(function(i, _cell) {
 			var date = indexDate(i);
-			$(_cell).text(formatDate(date, colFormat));
+			$(_cell).text(dateManager.formatDate(date, colFormat));
 		});
 
 		if (showWeekNumbers) {
 			body.find('.fc-week-number > div').each(function(i, _cell) {
 				var weekStart = _cellDate(i, 0);
-				$(_cell).text(formatDate(weekStart, weekNumberFormat));
+				$(_cell).text(dateManager.formatDate(weekStart, weekNumberFormat));
 			});
 		}
 		
@@ -313,7 +314,7 @@ function BasicView(element, calendar, viewName) {
 	
 	function dayClick(ev) {
 		if (!opt('selectable')) { // if selectable, SelectionManager will worry about dayClick
-			var date = parseISO8601($(this).data('date'));
+			var date = dateManager.parseISO8601($(this).data('date'));
 			trigger('dayClick', this, date, true, ev);
 		}
 	}
@@ -328,26 +329,26 @@ function BasicView(element, calendar, viewName) {
 		if (refreshCoordinateGrid) {
 			coordinateGrid.build();
 		}
-		var rowStart = cloneDate(t.visStart);
-		var rowEnd = addDays(cloneDate(rowStart), colCnt);
+		var rowStart = dateManager.cloneDate(t.visStart);
+		var rowEnd = dateManager.addDays(dateManager.cloneDate(rowStart), colCnt);
 		for (var i=0; i<rowCnt; i++) {
 			var stretchStart = new Date(Math.max(rowStart, overlayStart));
 			var stretchEnd = new Date(Math.min(rowEnd, overlayEnd));
 			if (stretchStart < stretchEnd) {
 				var colStart, colEnd;
 				if (rtl) {
-					colStart = dayDiff(stretchEnd, rowStart)*dis+dit+1;
-					colEnd = dayDiff(stretchStart, rowStart)*dis+dit+1;
+					colStart = dateManager.dayDiff(stretchEnd, rowStart)*dis+dit+1;
+					colEnd = dateManager.dayDiff(stretchStart, rowStart)*dis+dit+1;
 				}else{
-					colStart = dayDiff(stretchStart, rowStart);
-					colEnd = dayDiff(stretchEnd, rowStart);
+					colStart = dateManager.dayDiff(stretchStart, rowStart);
+					colEnd = dateManager.dayDiff(stretchEnd, rowStart);
 				}
 				dayBind(
 					renderCellOverlay(i, colStart, i, colEnd-1)
 				);
 			}
-			addDays(rowStart, 7);
-			addDays(rowEnd, 7);
+			dateManager.addDays(rowStart, 7);
+			dateManager.addDays(rowEnd, 7);
 		}
 	}
 	
@@ -364,12 +365,12 @@ function BasicView(element, calendar, viewName) {
 	
 	
 	function defaultSelectionEnd(startDate, allDay) {
-		return cloneDate(startDate);
+		return dateManager.cloneDate(startDate);
 	}
 	
 	
 	function renderSelection(startDate, endDate, allDay) {
-		renderDayOverlay(startDate, addDays(cloneDate(endDate), 1), true); // rebuild every time???
+		renderDayOverlay(startDate, dateManager.addDays(dateManager.cloneDate(endDate), 1), true); // rebuild every time???
 	}
 	
 	
@@ -416,7 +417,7 @@ function BasicView(element, calendar, viewName) {
 	
 	
 	function defaultEventEnd(event) {
-		return cloneDate(event.start);
+		return dateManager.cloneDate(event.start);
 	}
 	
 	
@@ -469,8 +470,8 @@ function BasicView(element, calendar, viewName) {
 	
 	function dateCell(date) {
 		return {
-			row: Math.floor(dayDiff(date, t.visStart) / 7),
-			col: dayOfWeekCol(date.getDay())
+			row: Math.floor(dateManager.dayDiff(date, t.visStart) / 7),
+			col: dayOfWeekCol(dateManager.getDay(date))
 		};
 	}
 	
@@ -481,7 +482,7 @@ function BasicView(element, calendar, viewName) {
 	
 	
 	function _cellDate(row, col) {
-		return addDays(cloneDate(t.visStart), row*7 + col*dis+dit);
+		return dateManager.addDays(dateManager.cloneDate(t.visStart), row*7 + col*dis+dit);
 		// what about weekends in middle of week?
 	}
 	

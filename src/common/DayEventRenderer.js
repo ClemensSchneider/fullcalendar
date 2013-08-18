@@ -31,6 +31,7 @@ function DayEventRenderer() {
 	var getDaySegmentContainer = t.getDaySegmentContainer;
 	var bindDaySeg = t.bindDaySeg; //TODO: streamline this
 	var formatDates = t.calendar.formatDates;
+	var dateManager = t.calendar.dateManager;
 	var renderDayOverlay = t.renderDayOverlay;
 	var clearOverlays = t.clearOverlays;
 	var clearSelection = t.clearSelection;
@@ -147,13 +148,13 @@ function DayEventRenderer() {
 				classes.push('fc-event-end');
 			}
 			if (rtl) {
-				leftCol = dayOfWeekCol(seg.end.getDay()-1);
-				rightCol = dayOfWeekCol(seg.start.getDay());
+				leftCol = dayOfWeekCol(dateManager.getDay(seg.end)-1);
+				rightCol = dayOfWeekCol(dateManager.getDay(seg.start));
 				left = seg.isEnd ? colContentLeft(leftCol) : minLeft;
 				right = seg.isStart ? colContentRight(rightCol) : maxLeft;
 			}else{
-				leftCol = dayOfWeekCol(seg.start.getDay());
-				rightCol = dayOfWeekCol(seg.end.getDay()-1);
+				leftCol = dayOfWeekCol(dateManager.getDay(seg.end));
+				rightCol = dayOfWeekCol(dateManager.getDay(seg.start)-1);
 				left = seg.isStart ? colContentLeft(leftCol) : minLeft;
 				right = seg.isEnd ? colContentRight(rightCol) : maxLeft;
 			}
@@ -429,7 +430,7 @@ function DayEventRenderer() {
 						}
 					}
 					dayDelta = (r*7 + c*dis+dit) - (origCell.row*7 + origCell.col*dis+dit);
-					var newEnd = addDays(eventEnd(event), dayDelta, true);
+					var newEnd = dateManager.addDays(eventEnd(event), dayDelta, true);
 					if (dayDelta) {
 						eventCopy.end = newEnd;
 						var oldHelpers = helpers;
@@ -447,7 +448,7 @@ function DayEventRenderer() {
 						}
 					}
 					clearOverlays();
-					renderDayOverlay(event.start, addDays(cloneDate(newEnd), 1)); // coordinate grid already rebuild at hoverListener.start
+					renderDayOverlay(event.start, dateManager.addDays(dateManager.cloneDate(newEnd), 1)); // coordinate grid already rebuild at hoverListener.start
 				}
 			}, ev);
 			

@@ -31,6 +31,7 @@ function View(element, calendar, viewName) {
 	var defaultEventEnd = t.defaultEventEnd;
 	var normalizeEvent = calendar.normalizeEvent; // in EventManager
 	var reportEventChange = calendar.reportEventChange;
+	var dateManager = calendar.dateManager;
 	
 	
 	// locals
@@ -102,7 +103,7 @@ function View(element, calendar, viewName) {
 	
 	// returns a Date object for an event's end
 	function eventEnd(event) {
-		return event.end ? cloneDate(event.end) : defaultEventEnd(event);
+		return event.end ? dateManager.cloneDate(event.end) : defaultEventEnd(event);
 	}
 	
 	
@@ -232,9 +233,9 @@ function View(element, calendar, viewName) {
 			if (allDay !== undefined) {
 				e.allDay = allDay;
 			}
-			addMinutes(addDays(e.start, dayDelta, true), minuteDelta);
+			dateManager.addMinutes(dateManager.addDays(e.start, dayDelta, true), minuteDelta);
 			if (e.end) {
-				e.end = addMinutes(addDays(e.end, dayDelta, true), minuteDelta);
+				e.end = dateManager.addMinutes(dateManager.addDays(e.end, dayDelta, true), minuteDelta);
 			}
 			normalizeEvent(e, options);
 		}
@@ -245,7 +246,7 @@ function View(element, calendar, viewName) {
 		minuteDelta = minuteDelta || 0;
 		for (var e, len=events.length, i=0; i<len; i++) {
 			e = events[i];
-			e.end = addMinutes(addDays(eventEnd(e), dayDelta, true), minuteDelta);
+			e.end = dateManager.addMinutes(dateManager.addDays(eventEnd(e), dayDelta, true), minuteDelta);
 			normalizeEvent(e, options);
 		}
 	}

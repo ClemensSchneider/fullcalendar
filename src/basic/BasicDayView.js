@@ -17,19 +17,20 @@ function BasicDayView(element, calendar) {
 	var opt = t.opt;
 	var renderBasic = t.renderBasic;
 	var formatDate = calendar.formatDate;
+	var dateManager = calendar.dateManager;
 	
 	
 	
 	function render(date, delta) {
 		if (delta) {
-			addDays(date, delta);
+			dateManager.addDays(date, delta);
 			if (!opt('weekends')) {
-				skipWeekend(date, delta < 0 ? -1 : 1);
+				dateManager.skipWeekend(date, delta < 0 ? -1 : 1);
 			}
 		}
 		t.title = formatDate(date, opt('titleFormat'));
-		t.start = t.visStart = cloneDate(date, true);
-		t.end = t.visEnd = addDays(cloneDate(t.start), 1);
+		t.start = t.visStart = dateManager.cloneDate(date, true);
+		t.end = t.visEnd = dateManager.addDays(dateManager.cloneDate(t.start), 1);
 		renderBasic(1, 1, false);
 	}
 	

@@ -14,30 +14,31 @@ function MonthView(element, calendar) {
 	var opt = t.opt;
 	var renderBasic = t.renderBasic;
 	var formatDate = calendar.formatDate;
+	var dateManager = calendar.dateManager;
 	
 	
 	
 	function render(date, delta) {
 		if (delta) {
-			addMonths(date, delta);
-			date.setDate(1);
+			dateManager.addMonths(date, delta);
+			dateManager.setDate(date, 1);
 		}
-		var start = cloneDate(date, true);
-		start.setDate(1);
-		var end = addMonths(cloneDate(start), 1);
-		var visStart = cloneDate(start);
-		var visEnd = cloneDate(end);
+		var start = dateManager.cloneDate(date, true);
+		dateManager.setDate(start, 1);
+		var end = dateManager.addMonths(dateManager.cloneDate(start), 1);
+		var visStart = dateManager.cloneDate(start);
+		var visEnd = dateManager.cloneDate(end);
 		var firstDay = opt('firstDay');
 		var nwe = opt('weekends') ? 0 : 1;
 		if (nwe) {
-			skipWeekend(visStart);
-			skipWeekend(visEnd, -1, true);
+			dateManager.skipWeekend(visStart);
+			dateManager.skipWeekend(visEnd, -1, true);
 		}
-		addDays(visStart, -((visStart.getDay() - Math.max(firstDay, nwe) + 7) % 7));
-		addDays(visEnd, (7 - visEnd.getDay() + Math.max(firstDay, nwe)) % 7);
+		dateManager.addDays(visStart, -((dateManager.getDay(visStart) - Math.max(firstDay, nwe) + 7) % 7));
+		dateManager.addDays(visEnd, (7 - dateManager.getDay(visEnd) + Math.max(firstDay, nwe)) % 7);
 		var rowCnt = Math.round((visEnd - visStart) / (DAY_MS * 7));
 		if (opt('weekMode') == 'fixed') {
-			addDays(visEnd, (6 - rowCnt) * 7);
+			dateManager.addDays(visEnd, (6 - rowCnt) * 7);
 			rowCnt = 6;
 		}
 		t.title = formatDate(start, opt('titleFormat'));
