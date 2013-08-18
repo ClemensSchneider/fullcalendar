@@ -1,11 +1,11 @@
 {
   "name": "fullcalendar",
-  "version": "1.5.4-final",
+  "version": "1.6.1",
   "dependencies": {
-    "jquery": "~1.8.1"
+    "jquery": "~1.9.1"
   },
   "optionalDependencies": {
-    "jquery-ui": "~1.8.23"
+    "jquery-ui": "~1.10.2"
   },
 
   "title": "FullCalendar",
@@ -30,5 +30,5 @@
     "email": "arshaw@arshaw.com",
     "url": "http://arshaw.com/"
   },
-  "copyright": "2012 Adam Shaw"
+  "copyright": "2013 Adam Shaw"
 }

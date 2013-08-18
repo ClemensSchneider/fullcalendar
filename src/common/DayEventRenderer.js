@@ -217,7 +217,8 @@ function DayEventRenderer() {
 			html +=
 				" class='" + classes.join(' ') + "'" +
 				" style='position:absolute;z-index:8;left:"+left+"px;" + skinCss + "'" +
-				">";
+				">" +
+				"<div class='fc-event-inner'>";
 			if (!event.allDay && seg.isStart) {
 				html +=
 					"<span class='fc-event-time'>" +
@@ -225,7 +226,8 @@ function DayEventRenderer() {
 					"</span>";
 			}
 			html +=
-				"<span class='fc-event-title'>" + htmlEscape(event.title) + "</span>";
+				"<span class='fc-event-title'>" + htmlEscape(event.title) + "</span>" +
+				"</div>";
 			if (seg.isEnd && isEventResizable(event)) {
 				html +=
 					"<div class='ui-resizable-handle ui-resizable-" + (rtl ? 'w' : 'e') + "'>" +
